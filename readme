@@ -22,12 +22,19 @@ build:
     rlwrap ./u
 
 man:
-    + - * / sqrt quote atom eq car cdr cons define lambda
+    + - * / sqrt quote atom eq car cdr cons define lambda if
 
 types:
     f(i)64, no string support
 
 example:
-    (quote hello,world)              ;hello,world
-    (define (square x) (* x x))      ;square
-    (square 12)                      ;144
+    (quote hello,world)                ;hello,world
+    (define (square x) (* x x))        ;square
+    (square 12)                        ;14
+
+    (define fact
+      (lambda (n)
+        (if (eq n 0)
+             1
+             (* n (fact (- n 1))))))
+    (fact 5)                           ;120

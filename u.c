@@ -1,5 +1,5 @@
 #include<string.h> //u incunabulum /if64
-#include<stdlib.h> //+ - * / sqrt quote atom eq car cdr cons define lambda
+#include<stdlib.h> //+ - * / sqrt quote atom eq car cdr cons define lambda if
 #include<stdio.h>  //(c)nekoarch 2025 MIT
 #include<math.h>   //sqrt
 typedef int I;typedef void V,*U;typedef char C;typedef double F;
@@ -58,17 +58,18 @@ U2(f_eq,U a=eval(car(x),y),b=eval(car(cdr(x)),y); R eq(a,b)?Sm("t"):nil)
 U2(f_car,R car(eval(car(x),y)))
 U2(f_cdr,R cdr(eval(car(x),y)))
 U2(f_cons,R cons(eval(car(x),y),eval(car(cdr(x)),y)))
-U2(f_define,U f=car(x);$(T(f)==Sym,U val=eval(car(cdr(x)),y);genv=cons(cons(f,val),genv);R f){U fname=car(f),p=cdr(f),body=car(cdr(x));U clo=closure(p,body,y);genv=cons(cons(fname,clo),genv);R fname;})
+U2(f_define,U f=car(x);$(T(f)==Sym,U ph=cons(f,nil);genv=cons(ph,genv);U val=eval(car(cdr(x)),genv);((U*)ph)[2]=val;R f){U fname=car(f),p=cdr(f),body=car(cdr(x));
+U ph=cons(fname,nil);genv=cons(ph,genv);U clo=closure(p,body,genv);((U*)ph)[2]=clo;R fname;})
 U2(f_lambda,R closure(car(x),car(cdr(x)),y))
+U2(f_if,U c=eval(car(x),y);$(!isNil(c),R eval(car(cdr(x)),y)){R eval(car(cdr(cdr(x))),y);})
 prim_entry table[]={
 {"+",f_add},{"-",f_minus},{"*",f_mul},{"/",f_div},{"sqrt",f_sqrt},
 {"quote",f_quote},{"atom",f_atom},{"eq",f_eq},{"car",f_car},
-{"cdr",f_cdr},{"cons",f_cons},{"define",f_define},{"lambda",f_lambda},{NULL,NULL}};
+{"cdr",f_cdr},{"cons",f_cons},{"define",f_define},{"lambda",f_lambda},{"if",f_if},{NULL,NULL}};
 U eval(Ux,Uy){$$(T(x)==Sym,R lookup(x,y))$$(T(x)==Num||isNil(x),R x)
 U op=car(x),args=cdr(x);$$(T(op)==Sym,C*s=gSm(op);for(prim_entry *p=table;p->name;p++){$$(!strcmp(s,p->name),R p->fn(args,y))})
-U f=eval(op,y);$$(T(f)!=Clos,printf("expect function\n");exit(1))
-U params=clop(f),body=clob(f),e0=cloe(f),argv=nil;for(U xs=args;!isNil(xs);xs=cdr(xs)){argv=cons(eval(car(xs),y),argv);}
-U new_env=e0;for(U ps=params;!isNil(ps);ps=cdr(ps)){$$(isNil(argv),printf("expect arg\n");exit(1))new_env=cons(cons(car(ps),car(argv)),new_env);argv=cdr(argv);}R eval(body,new_env);}
+U f=eval(op,y);$$(T(f)!=Clos,printf("expect function\n");exit(1))U params=clop(f),body=clob(f),e0=cloe(f),new_env=e0,xs=args;
+for(U ps=params;!isNil(ps);ps=cdr(ps),xs=cdr(xs)){$$(isNil(y),printf("expect arg\n");exit(1))U val=eval(car(xs),y);new_env=cons(cons(car(ps),val),new_env);}R eval(body,new_env);}
 I main(){nil=malloc(sizeof(int));*(I*)nil=Nil;genv=nil;
 printf("u/incunabulum (c)nekoarch "__DATE__"\n");
 W(1){printf("  ");U expr=rexpr();U res=eval(expr,genv);pt(res);printf("\n");}R 0;}
