@@ -69,7 +69,7 @@ prim_entry table[]={
 U eval(Ux,Uy){$$(T(x)==Sym,R lookup(x,y))$$(T(x)==Num||isNil(x),R x)
 U op=car(x),args=cdr(x);$$(T(op)==Sym,C*s=gSm(op);for(prim_entry *p=table;p->name;p++){$$(!strcmp(s,p->name),R p->fn(args,y))})
 U f=eval(op,y);$$(T(f)!=Clos,printf("expect function\n");exit(1))U params=clop(f),body=clob(f),e0=cloe(f),new_env=e0,xs=args;
-for(U ps=params;!isNil(ps);ps=cdr(ps),xs=cdr(xs)){$$(isNil(y),printf("expect arg\n");exit(1))U val=eval(car(xs),y);new_env=cons(cons(car(ps),val),new_env);}R eval(body,new_env);}
+for(U ps=params;!isNil(ps);ps=cdr(ps),xs=cdr(xs)){$$(isNil(xs),printf("expect arg\n");exit(1))U val=eval(car(xs),y);new_env=cons(cons(car(ps),val),new_env);}R eval(body,new_env);}
 I main(){nil=malloc(sizeof(int));*(I*)nil=Nil;genv=nil;
 printf("u/incunabulum (c)nekoarch "__DATE__"\n");
 W(1){printf("  ");U expr=rexpr();U res=eval(expr,genv);pt(res);printf("\n");}R 0;}
