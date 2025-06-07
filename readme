@@ -1,0 +1,33 @@
+u is a lisp dialect.
+
+currently there are two versions of u
+- u/incunabulum:
+  - open source (mit), but expect bugs
+  - works on all platforms, depends on glibc
+  - support a tiny subset of the actual k lang
+  - no simd, no io, no ffi(common-lisp/python/c...)
+  - based on a early dev version of u (around 2023)
+- u:
+  - linux avx512/avx2, nodep(even libc)
+  - small but useful libs(math,scripting,gui..)
+  - interpreter/compiler(x86,rv), can bootstrap
+  - extremely small, blazingly fast, actively maintained
+  - mailto:root@nekoarch.cc
+
+get:
+    https://github.com/nekoarch/u-incunabulum
+
+build:
+    gcc u.c -O3 -lm -o u //21kb
+    rlwrap ./u
+
+man:
+    + - * / sqrt quote atom eq car cdr cons define lambda
+
+types:
+    f(i)64, no string support
+
+example:
+    (quote hello,world)              ;hello,world
+    (define (square x) (* x x))      ;square
+    (square 12)                      ;144
