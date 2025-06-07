@@ -30,7 +30,7 @@ types:
 example:
     (quote hello,world)                ;hello,world
     (define (square x) (* x x))        ;square
-    (square 12)                        ;14
+    (square 12)                        ;144
 
     (define fact
       (lambda (n)
