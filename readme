@@ -4,7 +4,7 @@ currently there are two versions of u
 - u/incunabulum:
   - open source (mit), but expect bugs
   - works on all platforms, depends on glibc
-  - support a tiny subset of the actual k lang
+  - support a tiny subset of the actual u lang
   - no simd, no io, no ffi(common-lisp/python/c...)
   - based on a early dev version of u (around 2023)
 - u:
