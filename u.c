@@ -1,5 +1,5 @@
 #include<string.h> //u incunabulum /if64
-#include<stdlib.h> //+ - * / < > sqrt quote atom eq car cdr cons and or not xor define lambda if cond load #t #nil
+#include<stdlib.h> //+ - * / < > sqrt quote atom eq car cdr cons and or not xor define defmacro lambda if cond load #t #nil
 #include<stdio.h>  //(c)nekoarch 2025 MIT
 #include<math.h>   //sqrt
 typedef int I;typedef void V,*U;typedef char C;typedef double F;
@@ -21,7 +21,7 @@ typedef int I;typedef void V,*U;typedef char C;typedef double F;
 #define Qarg printf("expect arg\n");R QQ
 #define Qpair printf("expect pair\n");R QQ
 I eq(Ux,Uy);U eval(Ux,Uy);
-I Num=1,Sym=2,Pair=3,Nil=4,Clos=5;Z FILE *IF=NULL;U nil,genv,QQ;//error
+I Num=1,Sym=2,Pair=3,Nil=4,Clos=5;Z FILE *IF=NULL;U nil,genv,macenv,QQ;//slient
 I T(Ux){R*(I*)x;}
 U Nm(F x){C*m=malloc(sizeof(I)+sizeof(F));*(I*)m=Num;*(F*)(m+sizeof(I))=x;Rm;}
 F gNm(Ux){R *(F*)((C*)x+sizeof(I));}
@@ -75,17 +75,22 @@ U2(f_if,U c=eval(car(x),y);$(!isNil(c),R eval(car(cdr(x)),y)){R eval(car(cdr(cdr
 U2(f_cond,i(U xs=x){U ps=car(xs);$$(isNil(ps)||isNil(cdr(ps)),printf("bad clause\n");R QQ)U t=car(ps),b=cdr(ps);
 $(T(t)==Sym&&!strcmp(gSm(t),"else"),$$(!isNil(cdr(xs)),printf("cond: else must be the last\n");R QQ))
 {U res=eval(t,y);$$(isNil(res),continue)}U re=nil;for(U seq=b;!isNil(seq);seq=cdr(seq)){re=eval(car(seq),y);}R re;}R nil;)
+U2(f_macro,$$(isNil(x)||isNil(cdr(x))||isNil(cdr(cdr(x))),printf("bad macro syntax\n");R QQ)U nm=car(x),rst=cdr(x),p=car(rst),bdy=car(cdr(rst)),tmp=closure(p,bdy,y);macenv=cons(cons(nm,tmp),macenv);R nm;)
 U2(f_load,$$(isNil(x),printf("load: expect filename\n");R QQ)U fn=eval(car(x),y);$$(T(fn)!=Sym,printf("load: filename must be symbol\n");R QQ)
 FILE *oldIF=IF;IF=fopen(gSm(fn),"r");$$(!IF,perror(gSm(fn));IF=oldIF;R QQ)ready=0;W(1){rdt();$$(IF == stdin,break)U expr=rexpr();eval(expr,genv);ready=0;}IF=oldIF;ready=0;R QQ;)
 prim_entry table[]={
 {"+",f_add},{"-",f_minus},{"*",f_mul},{"/",f_div},{"sqrt",f_sqrt},
 {"quote",f_quote},{"atom",f_atom},{"eq",f_eq},{"car",f_car},
 {"cdr",f_cdr},{"cons",f_cons},{"define",f_define},{"lambda",f_lambda},
-{"if",f_if},{"<",f_lt},{">",f_gt},{"cond",f_cond},
-{"and",f_and},{"or",f_or},{"xor",f_xor},{"not",f_not},{"load", f_load},{NULL,NULL}};
-U eval(Ux,Uy){$$(x==QQ,R QQ)$$(T(x)==Sym,R lookup(x,y))$$(T(x)==Num||isNil(x),R x)
+{"if",f_if},{"<",f_lt},{">",f_gt},{"cond",f_cond},{"and",f_and},{"defmacro",f_macro},
+{"or",f_or},{"xor",f_xor},{"not",f_not},{"load", f_load},{NULL,NULL}};
+U lfind(Ux,Uy){i(U xs=y){U bind=car(xs);$$(T(bind)==Pair&&eq(x,car(bind)),R cdr(bind))}R nil;}
+U subst(Ux, Uy){$$(T(x)==Sym,U v=lfind(x,y);R v==nil?x:v)$$(T(x)==Pair,R cons(subst(car(x),y),subst(cdr(x),y)))R x;}
+U expand(Ux){$$(T(x)!=Pair,R x)U hd = car(x);
+i(U xs=macenv){U def=car(xs),name=car(def);if (eq(hd,name)){U rest=cdr(def),params=clop(rest),tem=clob(rest),penv=nil,args=cdr(x);for(U ps=params;!isNil(ps);ps=cdr(ps),args=cdr(args)){penv=cons(cons(car(ps),car(args)),penv);}U inst=subst(tem, penv);R expand(inst);}}R cons(expand(hd),expand(cdr(x)));}
+U eval(Ux,Uy){x=expand(x);$$(x==QQ,R QQ)$$(T(x)==Sym,R lookup(x,y))$$(T(x)==Num||isNil(x),R x)
 U op=car(x),args=cdr(x);$$(T(op)==Sym,C*s=gSm(op);for(prim_entry *p=table;p->name;p++){$$(!strcmp(s,p->name),R p->fn(args,y))})
 U f=eval(op,y);$$(T(f)!=Clos,printf("expect function\n");R QQ)U params=clop(f),body=clob(f),e0=cloe(f),new_env=e0,xs=args;
 for(U ps=params;!isNil(ps);ps=cdr(ps),xs=cdr(xs)){$$(isNil(xs),Qarg)U val=eval(car(xs),y);new_env=cons(cons(car(ps),val),new_env);}R eval(body,new_env);}
-I main(I ac,C**av){IF=stdin;$$(ac>1,$$(!freopen(av[1],"r",stdin),perror(av[1]);return 1))QQ=malloc(1);nil=malloc(sizeof(I));*(I*)nil=Nil;genv=nil;U t = Sm("#t");genv=cons(cons(t,t),genv);$$(ac==1,printf("u/incunabulum (c)nekoarch "__DATE__"\n"))
+I main(I ac,C**av){IF=stdin;$$(ac>1,$$(!freopen(av[1],"r",stdin),perror(av[1]);return 1))QQ=malloc(1);nil=malloc(sizeof(I));*(I*)nil=Nil;genv=nil;macenv=nil;U t = Sm("#t");genv=cons(cons(t,t),genv);$$(ac==1,printf("u/incunabulum (c)nekoarch "__DATE__"\n"))
 W(1){printf("  ");U expr=rexpr();U res=eval(expr,genv);pt(res);printf("\n");}R 0;}

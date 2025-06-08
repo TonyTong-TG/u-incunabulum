@@ -43,3 +43,30 @@ lst
 (xor #t #nil #t)
 (not (> 1 0))
 (not #nil)
+(defmacro when (cond body)
+  (cons (quote if)
+        (cons cond
+              (cons body
+                    (cons #nil #nil)))))
+(when (< 2 3)
+  (define testx 42))
+testx
+(defmacro unless (cond body)
+  (cons (quote if)
+        (cons (cons (quote not) (cons cond #nil))
+              (cons body (cons #nil #nil)))))
+(define y 0)
+(unless (< y 1)
+  (define y 100))
+y
+(defmacro infix (x op y)
+  (cons op (cons x (cons y #nil))))
+(infix 3 (quote *) 4)
+(defmacro and-let (var expr then)
+  (cons (quote if)
+        (cons expr
+              (cons (cons (quote define) (cons var (cons expr #nil)))
+                    (cons then (cons #nil #nil))))))
+(and-let b (< 1 2)
+         (define r (+ 1 2)))
+r

@@ -23,7 +23,7 @@ build:
 
 man:
     #t #nil + - * / < > sqrt
-    define lambda if cond load
+    define defmacro lambda if cond load
     quote atom eq
     car cdr cons
     and or not xor
