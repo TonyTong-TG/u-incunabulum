@@ -22,7 +22,7 @@ build:
     rlwrap ./u
 
 man:
-    + - * / sqrt quote atom eq car cdr cons define lambda if
+    + - * / < > sqrt quote atom eq car cdr cons define lambda if cond #t #nil
 
 types:
     f(i)64, no string support

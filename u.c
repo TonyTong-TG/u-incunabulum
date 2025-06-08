@@ -16,10 +16,10 @@ typedef int I;typedef void V,*U;typedef char C;typedef double F;
 #define U1(nm,a...) U nm(Ux){a;}
 #define U2(nm,a...) U nm(Ux,Uy){a;}
 #define U3(nm,a...) U nm(Ux,Uy,Uz){a;}
-#define Qnum printf("expect num\n");exit(1)
-#define Qarg printf("expect arg\n");exit(1)
+#define Qnum printf("expect num\n");R QQ
+#define Qarg printf("expect arg\n");R QQ
 I eq(Ux,Uy);U eval(Ux,Uy);
-I Num=1,Sym=2,Pair=3,Nil=4,Clos=5;U nil,genv;
+I Num=1,Sym=2,Pair=3,Nil=4,Clos=5;U nil,genv,QQ;//error
 I T(Ux){R*(I*)x;}
 U Nm(F x){C*m=malloc(sizeof(I)+sizeof(F));*(I*)m=Num;*(F*)(m+sizeof(I))=x;Rm;}
 F gNm(Ux){R *(F*)((C*)x+sizeof(I));}
@@ -34,7 +34,7 @@ U1(clob,R((U*)((C*)x+sizeof(I)))[1])
 U1(cloe,R((U*)((C*)x+sizeof(I)))[2])
 I isNil(Ux){R x==nil||T(x)==Nil;}
 I isAtom(Ux){R T(x)==Sym||T(x)==Num||isNil(x);}
-V pt(Ux){$(isNil(x),printf("nil"))$(T(x)==Num,printf("%g",gNm(x)))$(T(x)==Sym,printf("%s",gSm(x)))$$(T(x)==Pair,printf("(");W(T(x)==Pair){pt(car(x));x=cdr(x);$$(T(x)==Pair,printf(" "))}$$(!isNil(x),printf(" . ");pt(x))printf(")");)}
+V pt(Ux){$$(x==QQ,return)$(isNil(x),printf("#nil"))$(T(x)==Num,printf("%g",gNm(x)))$(T(x)==Sym,printf("%s",gSm(x)))$$(T(x)==Pair,printf("(");W(T(x)==Pair){pt(car(x));x=cdr(x);$$(T(x)==Pair,printf(" "))}$$(!isNil(x),printf(" . ");pt(x))printf(")");)}
 C token[128];I ready=0;
 I space(I c){R c==' '||c=='\f'||c=='\n'||c=='\r'||c=='\t'||c=='\v';}
 I digit(I c){R (c<='9')&&(c>='0');}
@@ -44,7 +44,7 @@ I i=0;do{token[i++]=c;c=getchar();}W(c!=EOF&&!space(c)&&c!='('&&c!=')'&&i<127);t
 C*ntk(){rdt();ready=0;R token;}
 U rexpr();U rlist(){rdt();$$(!strcmp(token,")"),ready=0;R nil;)ready=1;U f=rexpr();U r=rlist();R cons(f,r);}
 U rexpr(){C*t=ntk();$$(!strcmp(t,"#t"),R Sm("#t"))$$(!strcmp(t,"#nil"),R nil)$$(!strcmp(t,"("),R rlist())$$(digit(t[0])||(t[0]=='-'&&digit(t[1])),R Nm(strtod(t,NULL)))R Sm(t);}
-U2(lookup,i(U xs=y){U b=car(xs);$$(T(b)==Pair&&eq(x,car(b)),R cdr(b))}printf("unbound: %s\n",gSm(x));exit(1))
+U2(lookup,i(U xs=y){U b=car(xs);$$(T(b)==Pair&&eq(x,car(b)),R cdr(b))}printf("unbound: %s\n",gSm(x));R QQ)
 I eq(Ux,Uy){$$(T(x)!=T(y),R 0)$$(T(x)==Sym,R!strcmp(gSm(x),gSm(y)))$$(T(x)==Num,R gNm(x)==gNm(y))R x==y;}
 typedef U (*prim_fn)(Ux,Uy);
 typedef struct{C*name;prim_fn fn;}prim_entry;
@@ -67,7 +67,9 @@ U2(f_define,U f=car(x);$(T(f)==Sym,U ph=cons(f,nil);genv=cons(ph,genv);U val=eva
 U ph=cons(fname,nil);genv=cons(ph,genv);U clo=closure(p,body,genv);((U*)ph)[2]=clo;R fname;})
 U2(f_lambda,R closure(car(x),car(cdr(x)),y))
 U2(f_if,U c=eval(car(x),y);$(!isNil(c),R eval(car(cdr(x)),y)){R eval(car(cdr(cdr(x))),y);})
-U2(f_cond,i(U xs=x){U ps=car(xs);$$(isNil(ps)||isNil(cdr(ps)),printf("bad clause\n");exit(1))U t=car(ps),b=cdr(ps);$(T(t)==Sym&&!strcmp(gSm(t),"else"),$$(!isNil(cdr(xs)),printf("cond: else must be the last\n");exit(1))){U res=eval(t,y);$$(isNil(res),continue)}U re=nil;for(U seq=b;!isNil(seq);seq=cdr(seq)){re=eval(car(seq),y);}R re;}R nil;)
+U2(f_cond,i(U xs=x){U ps=car(xs);$$(isNil(ps)||isNil(cdr(ps)),printf("bad clause\n");R QQ)U t=car(ps),b=cdr(ps);
+$(T(t)==Sym&&!strcmp(gSm(t),"else"),$$(!isNil(cdr(xs)),printf("cond: else must be the last\n");R QQ))
+{U res=eval(t,y);$$(isNil(res),continue)}U re=nil;for(U seq=b;!isNil(seq);seq=cdr(seq)){re=eval(car(seq),y);}R re;}R nil;)
 prim_entry table[]={
 {"+",f_add},{"-",f_minus},{"*",f_mul},{"/",f_div},{"sqrt",f_sqrt},
 {"quote",f_quote},{"atom",f_atom},{"eq",f_eq},{"car",f_car},
@@ -75,7 +77,7 @@ prim_entry table[]={
 {"if",f_if},{"<",f_lt},{">",f_gt},{"cond",f_cond},{NULL,NULL}};
 U eval(Ux,Uy){$$(T(x)==Sym,R lookup(x,y))$$(T(x)==Num||isNil(x),R x)
 U op=car(x),args=cdr(x);$$(T(op)==Sym,C*s=gSm(op);for(prim_entry *p=table;p->name;p++){$$(!strcmp(s,p->name),R p->fn(args,y))})
-U f=eval(op,y);$$(T(f)!=Clos,printf("expect function\n");exit(1))U params=clop(f),body=clob(f),e0=cloe(f),new_env=e0,xs=args;
+U f=eval(op,y);$$(T(f)!=Clos,printf("expect function\n");R QQ)U params=clop(f),body=clob(f),e0=cloe(f),new_env=e0,xs=args;
 for(U ps=params;!isNil(ps);ps=cdr(ps),xs=cdr(xs)){$$(isNil(xs),Qarg)U val=eval(car(xs),y);new_env=cons(cons(car(ps),val),new_env);}R eval(body,new_env);}
-I main(){nil=malloc(sizeof(int));*(I*)nil=Nil;genv=nil;U t = Sm("#t");genv=cons(cons(t,t),genv);printf("u/incunabulum (c)nekoarch "__DATE__"\n");
+I main(){QQ=malloc(1);nil=malloc(sizeof(I));*(I*)nil=Nil;genv=nil;U t = Sm("#t");genv=cons(cons(t,t),genv);printf("u/incunabulum (c)nekoarch "__DATE__"\n");
 W(1){printf("  ");U expr=rexpr();U res=eval(expr,genv);pt(res);printf("\n");}R 0;}
