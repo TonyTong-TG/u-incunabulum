@@ -1,4 +1,4 @@
-(load (quote ./lib/math.u))
+(load (quote ./l/math.u))
 
 (define nil? (lambda (x) (eq x #nil)))
 (define <= (lambda (a b) (or (< a b) (eq a b))))

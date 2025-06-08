@@ -41,10 +41,10 @@ C token[128];I ready=0;
 I space(I c){R c==' '||c=='\f'||c=='\n'||c=='\r'||c=='\t'||c=='\v';}
 I digit(I c){R (c<='9')&&(c>='0');}
 V rdt(){$$(ready, R)I c;W((c=fgetc(IF))!=EOF&&space(c));
-$(c==EOF,$$(IF!=stdin,fclose(IF);IF=stdin;ready=0;R)exit(0));$(c=='('||c==')',token[0]=c;token[1]=0;ready=1;R){I i=0;token[i++]=c;W((c=fgetc(IF))!=EOF&&!space(c)&&c!='('&&c!=')'&&i<127){token[i++]=c;}token[i]=0;$$(c!=EOF,ungetc(c,IF))}ready=1;}
+$(c==EOF,$$(IF!=stdin,fclose(IF);IF=stdin;ready=0;R)exit(0));$(c=='('||c==')'||c=='\'',token[0]=c;token[1]=0;ready=1;R){I i=0;token[i++]=c;W((c=fgetc(IF))!=EOF&&!space(c)&&c!='('&&c!=')'&&i<127){token[i++]=c;}token[i]=0;$$(c!=EOF,ungetc(c,IF))}ready=1;}
 C*ntk(){rdt();ready=0;R token;}
 U rexpr();U rlist(){rdt();$$(!strcmp(token,")"),ready=0;R nil;)ready=1;U f=rexpr();U r=rlist();R cons(f,r);}
-U rexpr(){C*t=ntk();$$(!strcmp(t,"#t"),R Sm("#t"))$$(!strcmp(t,"#nil"),R nil)$$(!strcmp(t,"("),R rlist())$$(digit(t[0])||(t[0]=='-'&&digit(t[1])),R Nm(strtod(t,NULL)))R Sm(t);}
+U rexpr(){C*t=ntk();$$(!strcmp(t,"'"),U qtd=rexpr();R cons(Sm("quote"),cons(qtd,nil)))$$(!strcmp(t,"#t"),R Sm("#t"))$$(!strcmp(t,"#nil"),R nil)$$(!strcmp(t,"("),R rlist())$$(digit(t[0])||(t[0]=='-'&&digit(t[1])),R Nm(strtod(t,NULL)))R Sm(t);}
 U2(lookup,i(U xs=y){U b=car(xs);$$(T(b)==Pair&&eq(x,car(b)),R cdr(b))}printf("unbound: %s\n",gSm(x));R QQ)
 I eq(Ux,Uy){$$(T(x)!=T(y),R 0)$$(T(x)==Sym,R!strcmp(gSm(x),gSm(y)))$$(T(x)==Num,R gNm(x)==gNm(y))R x==y;}
 typedef U (*prim_fn)(Ux,Uy);
