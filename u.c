@@ -1,5 +1,5 @@
 #include<string.h> //u incunabulum /if64
-#include<stdlib.h> //+ - * / < > sqrt quote atom eq car cdr cons define lambda if cond #t #nil
+#include<stdlib.h> //+ - * / < > sqrt quote atom eq car cdr cons and or not xor define lambda if cond #t #nil
 #include<stdio.h>  //(c)nekoarch 2025 MIT
 #include<math.h>   //sqrt
 typedef int I;typedef void V,*U;typedef char C;typedef double F;
@@ -64,6 +64,10 @@ U2(f_gt,U f=eval(car(x),y);$$(T(f)!=Num,Qnum)i(U xs=cdr(x)){U nxt=eval(car(xs),y
 U2(f_car,$$(isNil(x),Qarg)U v=eval(car(x),y);$$(T(v)!=Pair,Qpair)R car(v);)
 U2(f_cdr,$$(isNil(x),Qarg)U v=eval(car(x),y);$$(T(v)!=Pair,Qpair)R cdr(v);)
 U2(f_cons,R cons(eval(car(x),y),eval(car(cdr(x)),y)))
+U2(f_and,$$(isNil(x),R Sm("#t"))i(U xs=x){U v=eval(car(xs),y);$$(isNil(v),R nil)}R Sm("#t");)
+U2(f_or,$$(isNil(x),R nil)i(U xs=x){U v=eval(car(xs),y);$$(!isNil(v),R Sm("#t"))}R nil;)
+U2(f_xor,I cnt=0;i(U xs=x){U v=eval(car(xs),y);$$(!isNil(v),cnt++)}R(cnt%2)?Sm("#t"):nil;)
+U2(f_not,$$(isNil(x)||!isNil(cdr(x)),printf("not: expect 1 arg\n");R QQ)U v=eval(car(x),y);R isNil(v)?Sm("#t"):nil;)
 U2(f_define,U f=car(x);$(T(f)==Sym,U ph=cons(f,nil);genv=cons(ph,genv);U val=eval(car(cdr(x)),genv);((U*)ph)[2]=val;R f){U fname=car(f),p=cdr(f),body=car(cdr(x));
 U ph=cons(fname,nil);genv=cons(ph,genv);U clo=closure(p,body,genv);((U*)ph)[2]=clo;R fname;})
 U2(f_lambda,R closure(car(x),car(cdr(x)),y))
@@ -75,7 +79,8 @@ prim_entry table[]={
 {"+",f_add},{"-",f_minus},{"*",f_mul},{"/",f_div},{"sqrt",f_sqrt},
 {"quote",f_quote},{"atom",f_atom},{"eq",f_eq},{"car",f_car},
 {"cdr",f_cdr},{"cons",f_cons},{"define",f_define},{"lambda",f_lambda},
-{"if",f_if},{"<",f_lt},{">",f_gt},{"cond",f_cond},{NULL,NULL}};
+{"if",f_if},{"<",f_lt},{">",f_gt},{"cond",f_cond},
+{"and",f_and},{"or",f_or},{"xor",f_xor},{"not",f_not},{NULL,NULL}};
 U eval(Ux,Uy){$$(x==QQ,R QQ)$$(T(x)==Sym,R lookup(x,y))$$(T(x)==Num||isNil(x),R x)
 U op=car(x),args=cdr(x);$$(T(op)==Sym,C*s=gSm(op);for(prim_entry *p=table;p->name;p++){$$(!strcmp(s,p->name),R p->fn(args,y))})
 U f=eval(op,y);$$(T(f)!=Clos,printf("expect function\n");R QQ)U params=clop(f),body=clob(f),e0=cloe(f),new_env=e0,xs=args;

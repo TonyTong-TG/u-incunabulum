@@ -5,7 +5,7 @@ currently there are two versions of u
   - open source (mit), but expect bugs
   - works on all platforms, depends on glibc
   - support a tiny subset of the actual u lang
-  - no simd, no io, no ffi(common-lisp/python/c...)
+  - no simd, no ffi(common-lisp/python/c...)
   - based on a early dev version of u (around 2023)
 - u:
   - linux avx512/avx2, nodep(even libc)
@@ -22,19 +22,10 @@ build:
     rlwrap ./u
 
 man:
-    + - * / < > sqrt quote atom eq car cdr cons define lambda if cond #t #nil
+    + - * / < > sqrt quote atom eq car cdr cons and or not xor define lambda if cond #t #nil
 
 types:
     f(i)64, no string support
 
 example:
-    (quote hello,world)                ;hello,world
-    (define (square x) (* x x))        ;square
-    (square 12)                        ;144
-
-    (define fact
-      (lambda (n)
-        (if (eq n 0)
-             1
-             (* n (fact (- n 1))))))
-    (fact 5)                           ;120
+    ./u ./e/t.u
