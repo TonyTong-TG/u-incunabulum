@@ -36,15 +36,15 @@ U1(clob,R((U*)((C*)x+sizeof(I)))[1])
 U1(cloe,R((U*)((C*)x+sizeof(I)))[2])
 I isNil(Ux){R x==nil||T(x)==Nil;}
 I isAtom(Ux){R T(x)==Sym||T(x)==Num||isNil(x);}
-V pt(Ux){$$(x==QQ,return)$(isNil(x),printf("#nil"))$(T(x)==Num,printf("%g",gNm(x)))$(T(x)==Sym,printf("%s",gSm(x)))$$(T(x)==Pair,printf("(");W(T(x)==Pair){pt(car(x));x=cdr(x);$$(T(x)==Pair,printf(" "))}$$(!isNil(x),printf(" . ");pt(x))printf(")");)}
+V pt(Ux){$$(x==QQ,return)$(isNil(x),printf("#nil"))$(T(x)==Num,F v=gNm(x),ip;$(modf(v,&ip)==0.0&&fabs(v)<9e15,printf("%.0f",v)){printf("%g",v);})$(T(x)==Sym,printf("%s",gSm(x)))$$(T(x)==Pair,printf("(");W(T(x)==Pair){pt(car(x));x=cdr(x);$$(T(x)==Pair,printf(" "))}$$(!isNil(x),printf(" . ");pt(x))printf(")");)}
 C token[128];I ready=0;
 I space(I c){R c==' '||c=='\f'||c=='\n'||c=='\r'||c=='\t'||c=='\v';}
 I digit(I c){R (c<='9')&&(c>='0');}
 V rdt(){$$(ready, R)I c;W((c=fgetc(IF))!=EOF&&space(c));
-$(c==EOF,$$(IF!=stdin,fclose(IF);IF=stdin;ready=0;R)exit(0));$(c=='('||c==')'||c=='\'',token[0]=c;token[1]=0;ready=1;R){I i=0;token[i++]=c;W((c=fgetc(IF))!=EOF&&!space(c)&&c!='('&&c!=')'&&i<127){token[i++]=c;}token[i]=0;$$(c!=EOF,ungetc(c,IF))}ready=1;}
+$(c==EOF,$$(IF!=stdin,fclose(IF);IF=stdin;ready=0;R)exit(0))$(c=='"',I i=0;token[i++]=c;W((c=fgetc(IF))!=EOF&&c!='"'){token[i++]=c;$$(i>=127,break)}token[i++]=c;token[i]=0;ready=1;R;)$(c=='('||c==')'||c=='\'',token[0]=c;token[1]=0;ready=1;R){I i=0;token[i++]=c;W((c=fgetc(IF))!=EOF&&!space(c)&&c!='('&&c!=')'&&i<127){token[i++]=c;}token[i]=0;$$(c!=EOF,ungetc(c,IF))}ready=1;}
 C*ntk(){rdt();ready=0;R token;}
 U rexpr();U rlist(){rdt();$$(!strcmp(token,")"),ready=0;R nil;)ready=1;U f=rexpr();U r=rlist();R cons(f,r);}
-U rexpr(){C*t=ntk();$$(!strcmp(t,"'"),U qtd=rexpr();R cons(Sm("quote"),cons(qtd,nil)))$$(!strcmp(t,"#t"),R Sm("#t"))$$(!strcmp(t,"#nil"),R nil)$$(!strcmp(t,"("),R rlist())$$(digit(t[0])||(t[0]=='-'&&digit(t[1])),R Nm(strtod(t,NULL)))R Sm(t);}
+U rexpr(){C*t=ntk();$$(t[0]=='"'&&t[strlen(t)-1]=='"',R Sm(t))$$(!strcmp(t,"'"),U qtd=rexpr();R cons(Sm("quote"),cons(qtd,nil)))$$(!strcmp(t,"#t"),R Sm("#t"))$$(!strcmp(t,"#nil"),R nil)$$(!strcmp(t,"("),R rlist())$$(digit(t[0])||(t[0]=='-'&&digit(t[1])),R Nm(strtod(t,NULL)))R Sm(t);}
 U2(lookup,i(U xs=y){U b=car(xs);$$(T(b)==Pair&&eq(x,car(b)),R cdr(b))}printf("unbound: %s\n",gSm(x));R QQ)
 I eq(Ux,Uy){$$(T(x)!=T(y),R 0)$$(T(x)==Sym,R!strcmp(gSm(x),gSm(y)))$$(T(x)==Num,R gNm(x)==gNm(y))R x==y;}
 typedef U (*prim_fn)(Ux,Uy);
@@ -88,7 +88,7 @@ U lfind(Ux,Uy){i(U xs=y){U bind=car(xs);$$(T(bind)==Pair&&eq(x,car(bind)),R cdr(
 U subst(Ux, Uy){$$(T(x)==Sym,U v=lfind(x,y);R v==nil?x:v)$$(T(x)==Pair,R cons(subst(car(x),y),subst(cdr(x),y)))R x;}
 U expand(Ux){$$(T(x)!=Pair,R x)U hd = car(x);
 i(U xs=macenv){U def=car(xs),name=car(def);if (eq(hd,name)){U rest=cdr(def),params=clop(rest),tem=clob(rest),penv=nil,args=cdr(x);for(U ps=params;!isNil(ps);ps=cdr(ps),args=cdr(args)){penv=cons(cons(car(ps),car(args)),penv);}U inst=subst(tem, penv);R expand(inst);}}R cons(expand(hd),expand(cdr(x)));}
-U eval(Ux,Uy){x=expand(x);$$(x==QQ,R QQ)$$(T(x)==Sym,R lookup(x,y))$$(T(x)==Num||isNil(x),R x)
+U eval(Ux,Uy){x=expand(x);$$(x==QQ,R QQ)$$(T(x)==Sym,C*s=gSm(x);$$(s[0]=='"'&&s[strlen(s)-1]=='"',R x)R lookup(x,y))$$(T(x)==Num||isNil(x),R x)
 U op=car(x),args=cdr(x);$$(T(op)==Sym,C*s=gSm(op);for(prim_entry *p=table;p->name;p++){$$(!strcmp(s,p->name),R p->fn(args,y))})
 U f=eval(op,y);$$(T(f)!=Clos,printf("expect function\n");R QQ)U params=clop(f),body=clob(f),e0=cloe(f),new_env=e0,xs=args;
 for(U ps=params;!isNil(ps);ps=cdr(ps),xs=cdr(xs)){$$(isNil(xs),Qarg)U val=eval(car(xs),y);new_env=cons(cons(car(ps),val),new_env);}R eval(body,new_env);}
