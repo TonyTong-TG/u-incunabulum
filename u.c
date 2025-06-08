@@ -18,6 +18,7 @@ typedef int I;typedef void V,*U;typedef char C;typedef double F;
 #define U3(nm,a...) U nm(Ux,Uy,Uz){a;}
 #define Qnum printf("expect num\n");R QQ
 #define Qarg printf("expect arg\n");R QQ
+#define Qpair printf("expect pair\n");R QQ
 I eq(Ux,Uy);U eval(Ux,Uy);
 I Num=1,Sym=2,Pair=3,Nil=4,Clos=5;U nil,genv,QQ;//error
 I T(Ux){R*(I*)x;}
@@ -60,8 +61,8 @@ U2(f_atom,R isAtom(eval(car(x),y))?Sm("#t"):nil)
 U2(f_eq,U a=eval(car(x),y),b=eval(car(cdr(x)),y); R eq(a,b)?Sm("#t"):nil)
 U2(f_lt,U f=eval(car(x),y);$$(T(f)!=Num,Qnum)i(U xs=cdr(x)){U nxt=eval(car(xs),y);$$(T(nxt)!=Num,Qnum)$$(!(gNm(f)<gNm(nxt)),R nil)f=nxt;}R Sm("#t");)
 U2(f_gt,U f=eval(car(x),y);$$(T(f)!=Num,Qnum)i(U xs=cdr(x)){U nxt=eval(car(xs),y);$$(T(nxt)!=Num,Qnum)$$(!(gNm(f)>gNm(nxt)),R nil)f=nxt;}R Sm("#t");)
-U2(f_car,R car(eval(car(x),y)))
-U2(f_cdr,R cdr(eval(car(x),y)))
+U2(f_car,$$(isNil(x),Qarg)U v=eval(car(x),y);$$(T(v)!=Pair,Qpair)R car(v);)
+U2(f_cdr,$$(isNil(x),Qarg)U v=eval(car(x),y);$$(T(v)!=Pair,Qpair)R cdr(v);)
 U2(f_cons,R cons(eval(car(x),y),eval(car(cdr(x)),y)))
 U2(f_define,U f=car(x);$(T(f)==Sym,U ph=cons(f,nil);genv=cons(ph,genv);U val=eval(car(cdr(x)),genv);((U*)ph)[2]=val;R f){U fname=car(f),p=cdr(f),body=car(cdr(x));
 U ph=cons(fname,nil);genv=cons(ph,genv);U clo=closure(p,body,genv);((U*)ph)[2]=clo;R fname;})
@@ -75,9 +76,9 @@ prim_entry table[]={
 {"quote",f_quote},{"atom",f_atom},{"eq",f_eq},{"car",f_car},
 {"cdr",f_cdr},{"cons",f_cons},{"define",f_define},{"lambda",f_lambda},
 {"if",f_if},{"<",f_lt},{">",f_gt},{"cond",f_cond},{NULL,NULL}};
-U eval(Ux,Uy){$$(T(x)==Sym,R lookup(x,y))$$(T(x)==Num||isNil(x),R x)
+U eval(Ux,Uy){$$(x==QQ,R QQ)$$(T(x)==Sym,R lookup(x,y))$$(T(x)==Num||isNil(x),R x)
 U op=car(x),args=cdr(x);$$(T(op)==Sym,C*s=gSm(op);for(prim_entry *p=table;p->name;p++){$$(!strcmp(s,p->name),R p->fn(args,y))})
 U f=eval(op,y);$$(T(f)!=Clos,printf("expect function\n");R QQ)U params=clop(f),body=clob(f),e0=cloe(f),new_env=e0,xs=args;
 for(U ps=params;!isNil(ps);ps=cdr(ps),xs=cdr(xs)){$$(isNil(xs),Qarg)U val=eval(car(xs),y);new_env=cons(cons(car(ps),val),new_env);}R eval(body,new_env);}
-I main(){QQ=malloc(1);nil=malloc(sizeof(I));*(I*)nil=Nil;genv=nil;U t = Sm("#t");genv=cons(cons(t,t),genv);printf("u/incunabulum (c)nekoarch "__DATE__"\n");
+I main(I ac,C**av){$$(ac>1,$$(!freopen(av[1],"r",stdin),perror(av[1]);return 1))QQ=malloc(1);nil=malloc(sizeof(I));*(I*)nil=Nil;genv=nil;U t = Sm("#t");genv=cons(cons(t,t),genv);$$(ac==1,printf("u/incunabulum (c)nekoarch "__DATE__"\n"))
 W(1){printf("  ");U expr=rexpr();U res=eval(expr,genv);pt(res);printf("\n");}R 0;}
