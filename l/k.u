@@ -1,0 +1,54 @@
+(load (quote ./lib/math.u))
+
+(define nil? (lambda (x) (eq x #nil)))
+(define <= (lambda (a b) (or (< a b) (eq a b))))
+
+(define contains
+  (lambda (x xs)
+    (cond ((nil? xs) #nil)
+          ((eq x (car xs)) #t)
+          (else (contains x (cdr xs))))))
+
+(define take
+  (lambda (n xs)
+    (cond ((or (<= n 0) (nil? xs)) (quote ()))
+          (else (cons (car xs) (take (- n 1) (cdr xs)))))))
+
+(define drop
+  (lambda (n xs)
+    (cond ((nil? xs) (quote ()))
+          ((<= n 0) xs)
+          (else (drop (- n 1) (cdr xs))))))
+
+(define rev-acc
+  (lambda (acc xs)
+    (cond ((nil? xs) acc)
+          (else (rev-acc (cons (car xs) acc) (cdr xs))))))
+
+(define reverse
+  (lambda (xs) (rev-acc (quote ()) xs)))
+
+(define group
+  (lambda (n xs)
+    (cond ((<= n 0) (quote ()))
+          ((nil? xs) (quote ()))
+          (else (cons (take n xs) (group n (drop n xs)))))))
+
+(define where
+  (lambda (pred xs)
+    (cond ((nil? xs) (quote ()))
+          ((pred (car xs)) (cons (car xs) (where pred (cdr xs))))
+          (else (where pred (cdr xs))))))
+
+(define map
+  (lambda (f xs)
+    (cond ((nil? xs) (quote ()))
+          (else (cons (f (car xs)) (map f (cdr xs)))))))
+
+(define unique
+  (lambda (xs)
+    (cond ((nil? xs) (quote ()))
+          ((contains (car xs) (cdr xs))
+           (unique (cdr xs)))
+          (else
+           (cons (car xs) (unique (cdr xs)))))))

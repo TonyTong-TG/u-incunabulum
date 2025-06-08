@@ -1,0 +1,28 @@
+(define pi 3.141592653589793)
+(define e 2.718281828459045)
+(define pow
+        (lambda (x n) (if (< n 1) 1 (* x (pow x (- n 1))))))
+(define fact
+        (lambda (n) (if (< n 2) 1 (* n (fact (- n 1))))))
+(define fib
+        (lambda (n)
+          (cond ((< n 2) n)
+                (else (+ (fib (- n 1)) (fib (- n 2)))))))
+(define mod
+        (lambda (a b) (if (< a b) a (mod (- a b) b))))
+(define gcd
+        (lambda (a b) (if (eq b 0) a (gcd b (mod a b)))))
+(define lcm
+        (lambda (a b) (/ (* a b) (gcd a b))))
+(define abs
+        (lambda (x)
+          (if (< x 0) (- 0 x) x)))
+(define sign
+        (lambda (x)
+          (cond ((< x 0) -1)
+                ((> x 0) 1)
+                (else 0))))
+(define clamp
+        (lambda (x lo hi)
+          (if (< x lo) lo
+            (if (> x hi) hi x))))
