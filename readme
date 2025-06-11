@@ -35,6 +35,6 @@ example:
     ./u ./e/t.u
     ./u
     > (load (quote ./l/k.u))
-    > pi ; 3.14159 (in math.k)
+    > pi ; 3.14159 (in math.u)
     > (map (lambda (x) (* x x)) (quote (1 2 3))) ; (1 4 9)
     > (unique (quote (1 2 2 3 3 3 4))) ; (1 2 3 4)

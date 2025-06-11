@@ -1,0 +1,24 @@
+u-incunabulum
+
+0.3=>0.31
+
+1. fix broadcast for - /
+curr:
+  (- 1 '(1 2 3)) => (0 -1 -2)
+  (- '(1 2 3) 1) => (0 -1 -2)
+
+2. add rank/flatten/apply...
+   see: https://ref.kparc.io
+3. get rid of glibc
+   - pf
+   - malloc
+   - math.h //sqrt...
+4. wasm build($ and mit)
+
+0.31=>0.314
+1. refactor bc1 and bc2
+2. simd(avx2) + gc
+3. io/system:
+   (system 'echo '"hello world")
+
+4. multicore
