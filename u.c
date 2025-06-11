@@ -1,4 +1,4 @@
-#include "u.h" // u/incunabulum MIT f(i)64
+#include "u.h" // u/incunabulum MIT f(i)64 glibc
 U eval(Ux,Uy);
 V rdt(){$$(ready, R)I c;W((c=fgetc(IF))!=EOF&&space(c));$(c==EOF,$$(IF!=stdin,fclose(IF);IF=stdin;ready=0;R)exit(0))
 $(c=='"',I i=0;token[i++]=c;W((c=fgetc(IF))!=EOF&&c!='"'){token[i++]=c;$$(i>=127,break)}token[i++]=c;token[i]=0;ready=1;R;)
@@ -7,8 +7,16 @@ W((c=fgetc(IF))!=EOF&&!space(c)&&c!='('&&c!=')'&&i<127){token[i++]=c;}token[i]=0
 C*ntk(){rdt();ready=0;R token;}
 U rexpr();U rlist(){rdt();$$(!strcmp(token,")"),ready=0;R nil;)ready=1;U f=rexpr();U r=rlist();R cons(f,r);}
 U rexpr(){C*t=ntk();$$(t[0]=='"'&&t[strlen(t)-1]=='"',R Sm(t))$$(!strcmp(t,"'"),U qtd=rexpr();R cons(Sm("quote"),cons(qtd,nil)))
-$$(!strcmp(t,"#t"),R Sm("#t"))$$(!strcmp(t,"#nil"),R nil)$$(!strcmp(t,"("),R rlist())$$(digit(t[0])||(t[0]=='-'&&digit(t[1])),R Nm(strtod(t,NULL)))R Sm(t);}
-U2(lookup,i(U xs=y){U b=car(xs);$$(T(b)==Pair&&eq(x,car(b)),R cdr(b))}printf("unbound: %s\n",gSm(x));R QQ)
+$$(!strcmp(t,"#t"),R tr)$$(!strcmp(t,"#nil"),R nil)$$(!strcmp(t,"("),R rlist())$$(digit(t[0])||(t[0]=='-'&&digit(t[1])),R Nm(strtod(t,NULL)))R Sm(t);}
+U2(lookup,i(U xs=y){U b=car(xs);$$(T(b)==Pair&&eq(x,car(b)),R cdr(b))}printf("unbound: %s\n",gSm(x));RQ)
+U bc2(Ux,Uy,U(*op)(U,U)){$$(x==QQ||y==QQ,RQ)$$(isAtom(x)&&isAtom(y),$$(Tx!=Num||Ty!=Num,Qnum);R op(x,y))
+$$(isAtom(x)&&!isAtom(y),U rev=nil,m=nil;i(U xs=y){U r=bc2(x,car(xs),op);$$(r==QQ,RQ)rev=cons(r,rev);}i2(U ps=rev){m=cons(car(ps),m);}Rm;)
+$(!isAtom(x)&&isAtom(y),R bc2(y,x,op)){U xs=x,ys=y;W(!isNil(xs)&&!isNil(ys)){xs=cdr(xs);ys=cdr(ys);}
+$$(!isNil(xs)||!isNil(ys),Qsh)U rev=nil,m=nil;for(xs=x,ys=y;!isNil(xs);xs=cdr(xs),ys=cdr(ys)){U r=bc2(car(xs),car(ys),op);$$(r==QQ,RQ)rev=cons(r,rev);}
+i2(U ps=rev){m=cons(car(ps),m);}Rm;}} //binary
+U bc1(Ux,U(*op)(U)){$$(x==QQ,RQ)$$(isAtom(x),$$(Tx!=Num,Qnum)R op(x))
+U rev=nil,m=nil;i(U xs=x){U r=bc1(car(xs),op);$$(r==QQ,RQ)rev=cons(r,rev);}
+i2(U ps=rev){m=cons(car(ps),m);}Rm;} //unary
 typedef U (*prim_fn)(Ux,Uy);
 typedef struct{C*name;prim_fn fn;}prim_entry;
 prim_entry table[]={
@@ -23,10 +31,10 @@ U expand(Ux){$$(T(x)!=Pair,R x)U hd = car(x);
 i(U xs=macenv){U def=car(xs),name=car(def);if (eq(hd,name)){U rest=cdr(def),params=clop(rest),tem=clob(rest),penv=nil,args=cdr(x);
 for(U ps=params;!isNil(ps);ps=cdr(ps),args=cdr(args)){penv=cons(cons(car(ps),car(args)),penv);}
 U inst=subst(tem, penv);R expand(inst);}}R cons(expand(hd),expand(cdr(x)));}
-U eval(Ux,Uy){x=expand(x);$$(x==QQ,R QQ)$$(T(x)==Sym,C*s=gSm(x);$$(s[0]=='"'&&s[strlen(s)-1]=='"',R x)R lookup(x,y))$$(Tx==Num||isNil(x),R x)
-U op=car(x),args=cdr(x);$$(T(op)==Sym,C*s=gSm(op);for(prim_entry *p=table;p->name;p++){$$(!strcmp(s,p->name),R p->fn(args,y))})
+U eval(Ux,Uy){x=expand(x);$$(x==QQ,R QQ)$$(T(x)==Sym,C*s=gSm(x);$$(s[0]==':',$$(strcmp(s,":help")==0,pf(man);RQ))$$(s[0]=='"'&&s[strlen(s)-1]=='"',R x)R lookup(x,y))
+$$(Tx==Num||isNil(x)||Tx==True,R x)U op=car(x),args=cdr(x);$$(T(op)==Sym,C*s=gSm(op);for(prim_entry *p=table;p->name;p++){$$(!strcmp(s,p->name),R p->fn(args,y))})
 U f=eval(op,y);$$(T(f)!=Clos,Qfun)U params=clop(f),body=clob(f),e0=cloe(f),new_env=e0,xs=args;
 for(U ps=params;!isNil(ps);ps=cdr(ps),xs=cdr(xs)){$$(isNil(xs),Qarg)U val=eval(car(xs),y);new_env=cons(cons(car(ps),val),new_env);}R eval(body,new_env);}
-I main(I ac,C**av){IF=stdin;$$(ac>1,$$(!freopen(av[1],"r",stdin),perror(av[1]);return 1))
-QQ=malloc(1);nil=malloc(sizeof(I));*(I*)nil=Nil;genv=nil;macenv=nil;U t = Sm("#t");genv=cons(cons(t,t),genv);
+I main(I ac,C**av){IF=stdin;$$(ac>1,$$(!freopen(av[1],"r",stdin),perror(av[1]);R 1))
+QQ=malloc(1);nil=malloc(sizeof(I));tr=malloc(sizeof(I));*(I*)nil=Nil;*(I*)tr=True;genv=nil;macenv=nil;genv=cons(cons(tr,tr),genv);
 $$(ac==1,printf("u/incunabulum (c)nekoarch "__DATE__"\n"))W(1){printf("  ");U expr=rexpr();U res=eval(expr,genv);pt(res);printf("\n");}R 0;}
