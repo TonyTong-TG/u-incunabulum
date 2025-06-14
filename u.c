@@ -1,4 +1,5 @@
 #include "u.h" // u/incunabulum MIT f(i)64 glibc
+#define ver "0.3 "
 U eval(Ux,Uy);
 V rdt(){$$(ready, R)I c;W((c=fgetc(IF))!=EOF&&space(c));$(c==EOF,$$(IF!=stdin,fclose(IF);IF=stdin;ready=0;R)exit(0))
 $(c=='"',I i=0;token[i++]=c;W((c=fgetc(IF))!=EOF&&c!='"'){token[i++]=c;$$(i>=127,break)}token[i++]=c;token[i]=0;ready=1;R;)
@@ -9,14 +10,15 @@ U rexpr();U rlist(){rdt();$$(!strcmp(token,")"),ready=0;R nil;)ready=1;U f=rexpr
 U rexpr(){C*t=ntk();$$(t[0]=='"'&&t[strlen(t)-1]=='"',R Sm(t))$$(!strcmp(t,"'"),U qtd=rexpr();R cons(Sm("quote"),cons(qtd,nil)))
 $$(!strcmp(t,"#t"),R tr)$$(!strcmp(t,"#nil"),R nil)$$(!strcmp(t,"("),R rlist())$$(digit(t[0])||(t[0]=='-'&&digit(t[1])),R Nm(strtod(t,NULL)))R Sm(t);}
 U2(lookup,i(U xs=y){U b=car(xs);$$(T(b)==Pair&&eq(x,car(b)),R cdr(b))}printf("unbound: %s\n",gSm(x));RQ)
-U bc2(Ux,Uy,U(*op)(U,U)){$$(x==QQ||y==QQ,RQ)$$(isAtom(x)&&isAtom(y),$$(Tx!=Num||Ty!=Num,Qnum);R op(x,y))
-$$(isAtom(x)&&!isAtom(y),U rev=nil,m=nil;i(U xs=y){U r=bc2(x,car(xs),op);$$(r==QQ,RQ)rev=cons(r,rev);}i2(U ps=rev){m=cons(car(ps),m);}Rm;)
-$(!isAtom(x)&&isAtom(y),R bc2(y,x,op)){U xs=x,ys=y;W(!isNil(xs)&&!isNil(ys)){xs=cdr(xs);ys=cdr(ys);}
-$$(!isNil(xs)||!isNil(ys),Qsh)U rev=nil,m=nil;for(xs=x,ys=y;!isNil(xs);xs=cdr(xs),ys=cdr(ys)){U r=bc2(car(xs),car(ys),op);$$(r==QQ,RQ)rev=cons(r,rev);}
-i2(U ps=rev){m=cons(car(ps),m);}Rm;}} //binary
-U bc1(Ux,U(*op)(U)){$$(x==QQ,RQ)$$(isAtom(x),$$(Tx!=Num,Qnum)R op(x))
-U rev=nil,m=nil;i(U xs=x){U r=bc1(car(xs),op);$$(r==QQ,RQ)rev=cons(r,rev);}
-i2(U ps=rev){m=cons(car(ps),m);}Rm;} //unary
+U bc2(Ux,Uy,U(*op)(U,U)){$$(x==QQ||y==QQ,RQ)I ax=isAtom(x),ay=isAtom(y);
+$$(ax&&ay,$$(Tx!=Num||Ty!=Num,Qnum);R op(x,y))
+$$(ax||ay,I xatm=ax;U lst=xatm?y:x,hd=nil,*tl=&hd;W(!isNil(lst)){
+U a=xatm?x:car(lst),b=xatm?car(lst):y;U r=bc2(a,b,op);$$(r==QQ,RQ)
+U n=cons(r,nil);*tl=n;tl=&((U*)n)[2];lst=cdr(lst);}R hd;)
+{U xs=x,ys=y,hd=nil,*tl=&hd;W(!isNil(xs)&&!isNil(ys)){U r=bc2(car(xs),car(ys),op);$$(r==QQ,R QQ)
+U n=cons(r,nil); *tl=n; tl=&((U*)n)[2];xs=cdr(xs); ys=cdr(ys);}$$(!isNil(xs)||!isNil(ys),RQ)R hd;}} //binary
+U bc1(Ux,U(*op)(U)){$$(x==QQ,RQ)$$(isAtom(x),P(x,Num,Qnum)R op(x))
+U lst=x,hd=nil,*tl=&hd;W(!isNil(lst)){U r=op(car(lst));$$(r==QQ,RQ)U n=cons(r,nil);*tl=n;tl=&((U*)n)[2];lst=cdr(lst);}R hd;} //unary
 typedef U (*prim_fn)(Ux,Uy);
 typedef struct{C*name;prim_fn fn;}prim_entry;
 prim_entry table[]={
@@ -37,4 +39,4 @@ U f=eval(op,y);$$(T(f)!=Clos,Qfun)U params=clop(f),body=clob(f),e0=cloe(f),new_e
 for(U ps=params;!isNil(ps);ps=cdr(ps),xs=cdr(xs)){$$(isNil(xs),Qarg)U val=eval(car(xs),y);new_env=cons(cons(car(ps),val),new_env);}R eval(body,new_env);}
 I main(I ac,C**av){IF=stdin;$$(ac>1,$$(!freopen(av[1],"r",stdin),perror(av[1]);R 1))
 QQ=malloc(1);nil=malloc(sizeof(I));tr=malloc(sizeof(I));*(I*)nil=Nil;*(I*)tr=True;genv=nil;macenv=nil;genv=cons(cons(tr,tr),genv);
-$$(ac==1,printf("u/incunabulum (c)nekoarch "__DATE__"\n"))W(1){printf("  ");U expr=rexpr();U res=eval(expr,genv);pt(res);printf("\n");}R 0;}
+$$(ac==1,printf("u/incunabulum (c)nekoarch "ver __DATE__"\n"))W(1){printf("  ");U expr=rexpr();U res=eval(expr,genv);pt(res);printf("\n");}R 0;}
