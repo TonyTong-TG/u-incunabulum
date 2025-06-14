@@ -60,20 +60,16 @@ I isNil(Ux){R x==nil||Tx==Nil;}I isAtom(Ux){R Tx==Sym||Tx==Num||isNil(x)||Tx==Tr
 V pt(Ux){$$(x==QQ,R)$$(isNil(x),pf("#nil");R)$$(Tx==True,pf("#t");R)
 $$(Tx==Num,F v=gNm(x),ip;$(modf(v,&ip)==0.0&&fabs(v)<9e15,pf("%.0f",v)){pf("%g",v);})
 $$(Tx==Sym,pf("%s",gSm(x)))$$(Tx==Pair,pf("(");W(Tx==Pair){pt(car(x));x=cdr(x);$$(Tx==Pair,pf(" "))}$$(!isNil(x),pf(" . ");pt(x))pf(")");)}
-U add(Ux,Uy){R Nm(gNm(x)+gNm(y));}
-U mul(Ux,Uy){R Nm(gNm(x)*gNm(y));}
-U sub(Ux,Uy){R Nm(gNm(x)-gNm(y));}
-U _div(Ux,Uy){R Nm(gNm(x)/gNm(y));}
-U _sqrt(Ux){R Nm(sqrt(gNm(x)));}
-U _mod(Ux,Uy){R Nm(fmod(gNm(x),gNm(y)));}
+U add(Ux,Uy){R Nm(gNm(x)+gNm(y));}U mul(Ux,Uy){R Nm(gNm(x)*gNm(y));}U sub(Ux,Uy){R Nm(gNm(x)-gNm(y));}
+U _div(Ux,Uy){R Nm(gNm(x)/gNm(y));}U _sqrt(Ux){R Nm(sqrt(gNm(x)));}U _mod(Ux,Uy){R Nm(fmod(gNm(x),gNm(y)));}
 U2(f_add,$$(isNil(x),R Nm(0))Uv;i(U xs=cdr(x)){Uf;v=bc2(v,f,add);$$(v==QQ,RQ)}R v;)
 U2(f_mul,$$(isNil(x),R Nm(1))Uv;i(U xs=cdr(x)){Uf;v=bc2(v,f,mul);$$(v==QQ,RQ)}R v;)
-U2(f_minus,$$(isNil(x),R Nm(0))Uv;i(U xs=cdr(x)){Uf;v=bc2(v,f,sub);$$(v==QQ,RQ)}R v;)
-U2(f_div,$$(isNil(x),R Nm(0))Uv;i(U xs=cdr(x)){Uf;v=bc2(v,f,_div);$$(v==QQ,RQ)}R v;)
+U2(f_minus,$$(isNil(x),Qarg)Uv;$$(isNil(cdr(x)),P(v,Num,Qnum);R Nm(-gNm(v)))i(U xs=cdr(x)){Uf;v=bc2(v,f,sub);$$(v==QQ,RQ)}R v;)
+U2(f_div,$$(isNil(x),Qarg)Uv;$$(isNil(cdr(x)),P(v,Num,Qnum);R Nm(1/gNm(v)))i(U xs=cdr(x)){Uf;v=bc2(v,f,_div);$$(v==QQ,RQ)}R v;)
 U2(f_sqrt,$$(isNil(x),Qarg);$$(!isNil(cdr(x)),U rev=nil,m=nil;i(U xs=x){Uf;$$(f==QQ,RQ);U r=bc1(f,_sqrt);$$(r==QQ,RQ);rev=cons(r,rev);}
 i2(U ps=rev){m=cons(car(ps),m);}Rm;);Uv;$$(v==QQ,RQ);R bc1(v,_sqrt);)
-U2(f_mod,$$(isNil(x),Qarg)U a=eval(car(x),y);$$(isNil(cdr(x)),P(a,Num,Qnum);R Nm(fmod(gNm(a),1.0)))U b=eval(car(cdr(x)),y);
-$$(T(a)==Pair||T(b)==Pair,R bc2(a,b,_mod))P(a,Num,Qnum)F r=gNm(a);x=cdr(x);i(U xs=x){Uf;P(f,Num,Qnum)r=fmod(r,gNm(f));}R Nm(r);)
+U2(f_mod,$$(isNil(x)||isNil(cdr(x))||!isNil(cdr(cdr(x))),Qarg)Uv;$$(isNil(cdr(x)),P(v,Num,Qnum);R Nm(fmod(gNm(v),1.0)))U b=eval(car(cdr(x)),y);
+$$(Tv==Pair||T(b)==Pair,R bc2(v,b,_mod))P(v,Num,Qnum)F r=gNm(v);x=cdr(x);i(U xs=x){Uf;P(f,Num,Qnum)r=fmod(r,gNm(f));}R Nm(r);)
 U2(f_quote,(V)y;R car(x))U2(f_atom,R isAtom(eval(car(x),y))?tr:nil)
 U2(f_eq,$$(isNil(x)||isNil(cdr(x)),Rt)U f=eval(car(x),y);$$(f==QQ,RQ);i(U xs=cdr(x)){U v=eval(car(xs),y);$$(v==QQ,RQ)$$(!eq(f,v),R nil)}Rt;)
 U2(f_lt,U f=eval(car(x),y);$$(T(f)!=Num,Qnum)i(U xs=cdr(x)){U nxt=eval(car(xs),y);
