@@ -68,11 +68,8 @@ U _sqrt(Ux){R Nm(sqrt(gNm(x)));}
 U _mod(Ux,Uy){R Nm(fmod(gNm(x),gNm(y)));}
 U2(f_add,$$(isNil(x),R Nm(0))Uv;i(U xs=cdr(x)){Uf;v=bc2(v,f,add);$$(v==QQ,RQ)}R v;)
 U2(f_mul,$$(isNil(x),R Nm(1))Uv;i(U xs=cdr(x)){Uf;v=bc2(v,f,mul);$$(v==QQ,RQ)}R v;)
-U2(f_minus,$$(isNil(x),Qarg)U a=eval(car(x),y);$$(isNil(cdr(x)),P(a,Num,Qnum);R Nm(-gNm(a)))U b=eval(car(cdr(x)),y);
-$$(T(a)==Pair||T(b)==Pair,R bc2(a,b,sub))P(a,Num,Qnum)F r=gNm(a);x=cdr(x);i(U xs=x)
-{U v=eval(car(xs),y);P(v,Num,Qnum)r-=gNm(v);}R Nm(r);)
-U2(f_div,$$(isNil(x),Qarg)U a=eval(car(x),y);$$(isNil(cdr(x)),P(a,Num,Qnum);R Nm(1.0/gNm(a)))U b=eval(car(cdr(x)),y);
-$$(T(a)==Pair||T(b)==Pair,R bc2(a,b,_div))P(a,Num,Qnum)F r=gNm(a);x=cdr(x);i(U xs=x){Uf;P(f,Num,Qnum)r/=gNm(f);}R Nm(r);)
+U2(f_minus,$$(isNil(x),R Nm(0))Uv;i(U xs=cdr(x)){Uf;v=bc2(v,f,sub);$$(v==QQ,RQ)}R v;)
+U2(f_div,$$(isNil(x),R Nm(0))Uv;i(U xs=cdr(x)){Uf;v=bc2(v,f,_div);$$(v==QQ,RQ)}R v;)
 U2(f_sqrt,$$(isNil(x),Qarg);$$(!isNil(cdr(x)),U rev=nil,m=nil;i(U xs=x){Uf;$$(f==QQ,RQ);U r=bc1(f,_sqrt);$$(r==QQ,RQ);rev=cons(r,rev);}
 i2(U ps=rev){m=cons(car(ps),m);}Rm;);Uv;$$(v==QQ,RQ);R bc1(v,_sqrt);)
 U2(f_mod,$$(isNil(x),Qarg)U a=eval(car(x),y);$$(isNil(cdr(x)),P(a,Num,Qnum);R Nm(fmod(gNm(a),1.0)))U b=eval(car(cdr(x)),y);
