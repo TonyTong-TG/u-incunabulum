@@ -1,5 +1,5 @@
 cc = clang
-cflags = -O3 -march=native -s -pipe -std=c11
+cflags = -O3 -march=native -pipe -std=c11
 
 src = u.c
 bin = u

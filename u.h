@@ -41,7 +41,7 @@ I space(I c){R c==' '||c=='\f'||c=='\n'||c=='\r'||c=='\t'||c=='\v';}
 #define Qfun pf("expect function\n");RQ
 #define Qpair pf("expect pair\n");RQ
 #define P(a,b,c) $$(T(a)!=b,c) //panic early
-#define man "  +  -  *  /  sqrt  quote  atom  eq  car  cdr  cons  define  lambda\n  if  <  >  cond  and  or  xor  not  load  defmacro\n"
+#define man "  +  -  *  /  %%  sqrt  quote  atom  eq  car  cdr  cons  list  define  lambda\n  if  <  >  cond  and  or  xor  not  load  defmacro\n"
 U rexpr(V);V rdt(V);U eval(Ux,Uy);U bc2(Ux,Uy,U(*op)(U,U));U bc1(Ux,U(*op)(U));
 I Num=1,Sym=2,Pair=3,Nil=4,Clos=5,True=6;
 Z FILE *IF=NULL;U nil,tr,genv,macenv,QQ; //slient
@@ -65,6 +65,7 @@ U mul(Ux,Uy){R Nm(gNm(x)*gNm(y));}
 U sub(Ux,Uy){R Nm(gNm(x)-gNm(y));}
 U _div(Ux,Uy){R Nm(gNm(x)/gNm(y));}
 U _sqrt(Ux){R Nm(sqrt(gNm(x)));}
+U _mod(Ux,Uy){R Nm(fmod(gNm(x),gNm(y)));}
 U2(f_add,$$(isNil(x),R Nm(0))Uv;i(U xs=cdr(x)){Uf;v=bc2(v,f,add);$$(v==QQ,RQ)}R v;)
 U2(f_mul,$$(isNil(x),R Nm(1))Uv;i(U xs=cdr(x)){Uf;v=bc2(v,f,mul);$$(v==QQ,RQ)}R v;)
 U2(f_minus,$$(isNil(x),Qarg)U a=eval(car(x),y);$$(isNil(cdr(x)),P(a,Num,Qnum);R Nm(-gNm(a)))U b=eval(car(cdr(x)),y);
@@ -72,8 +73,10 @@ $$(T(a)==Pair||T(b)==Pair,R bc2(a,b,sub))P(a,Num,Qnum)F r=gNm(a);x=cdr(x);i(U xs
 {U v=eval(car(xs),y);P(v,Num,Qnum)r-=gNm(v);}R Nm(r);)
 U2(f_div,$$(isNil(x),Qarg)U a=eval(car(x),y);$$(isNil(cdr(x)),P(a,Num,Qnum);R Nm(1.0/gNm(a)))U b=eval(car(cdr(x)),y);
 $$(T(a)==Pair||T(b)==Pair,R bc2(a,b,_div))P(a,Num,Qnum)F r=gNm(a);x=cdr(x);i(U xs=x){Uf;P(f,Num,Qnum)r/=gNm(f);}R Nm(r);)
-U2(f_sqrt,$$(isNil(x), Qarg);$$(!isNil(cdr(x)),U rev=nil,m=nil;i(U xs=x){Uf;$$(f==QQ,RQ);U r=bc1(f,_sqrt);$$(r==QQ,RQ);rev=cons(r,rev);}
+U2(f_sqrt,$$(isNil(x),Qarg);$$(!isNil(cdr(x)),U rev=nil,m=nil;i(U xs=x){Uf;$$(f==QQ,RQ);U r=bc1(f,_sqrt);$$(r==QQ,RQ);rev=cons(r,rev);}
 i2(U ps=rev){m=cons(car(ps),m);}Rm;);Uv;$$(v==QQ,RQ);R bc1(v,_sqrt);)
+U2(f_mod,$$(isNil(x),Qarg)U a=eval(car(x),y);$$(isNil(cdr(x)),P(a,Num,Qnum);R Nm(fmod(gNm(a),1.0)))U b=eval(car(cdr(x)),y);
+$$(T(a)==Pair||T(b)==Pair,R bc2(a,b,_mod))P(a,Num,Qnum)F r=gNm(a);x=cdr(x);i(U xs=x){Uf;P(f,Num,Qnum)r=fmod(r,gNm(f));}R Nm(r);)
 U2(f_quote,(V)y;R car(x))U2(f_atom,R isAtom(eval(car(x),y))?tr:nil)
 U2(f_eq,$$(isNil(x)||isNil(cdr(x)),Rt)U f=eval(car(x),y);$$(f==QQ,RQ);i(U xs=cdr(x)){U v=eval(car(xs),y);$$(v==QQ,RQ)$$(!eq(f,v),R nil)}Rt;)
 U2(f_lt,U f=eval(car(x),y);$$(T(f)!=Num,Qnum)i(U xs=cdr(x)){U nxt=eval(car(xs),y);
@@ -100,3 +103,4 @@ U m=car(x),rst=cdr(x),p=car(rst),bdy=car(cdr(rst)),tmp=closure(p,bdy,y);macenv=c
 U2(f_load,$$(isNil(x),Qldn)U fn=eval(car(x),y);$$(T(fn)!=Sym,Qlds)
 FILE *oldIF=IF;IF=fopen(gSm(fn),"r");$$(!IF,perror(gSm(fn));IF=oldIF;R QQ)ready=0;
 W(1){rdt();$$(IF==stdin,break)U expr=rexpr();eval(expr,genv);ready=0;}IF=oldIF;ready=0;R Sm("loaded\n");)
+U2(f_list,$$(isNil(x), Qarg)U lst=nil,*tl=&lst;W(!isNil(x)){U e=eval(car(x),y);*tl=cons(e,nil);tl=&((U*)*tl)[2];x=cdr(x);}R lst;)

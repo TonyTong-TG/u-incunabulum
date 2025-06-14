@@ -22,9 +22,9 @@ U lst=x,hd=nil,*tl=&hd;W(!isNil(lst)){U r=op(car(lst));$$(r==QQ,RQ)U n=cons(r,ni
 typedef U (*prim_fn)(Ux,Uy);
 typedef struct{C*name;prim_fn fn;}prim_entry;
 prim_entry table[]={
-{"+",f_add},{"-",f_minus},{"*",f_mul},{"/",f_div},{"sqrt",f_sqrt},
+{"+",f_add},{"-",f_minus},{"*",f_mul},{"/",f_div},{"sqrt",f_sqrt},{"%",f_mod},
 {"quote",f_quote},{"atom",f_atom},{"eq",f_eq},{"car",f_car},
-{"cdr",f_cdr},{"cons",f_cons},{"define",f_define},{"lambda",f_lambda},
+{"cdr",f_cdr},{"cons",f_cons},{"define",f_define},{"lambda",f_lambda},{"list",f_list},
 {"if",f_if},{"<",f_lt},{">",f_gt},{"cond",f_cond},{"and",f_and},{"defmacro",f_macro},
 {"or",f_or},{"xor",f_xor},{"not",f_not},{"load", f_load},{NULL,NULL}};
 U lfind(Ux,Uy){i(U xs=y){U bind=car(xs);$$(T(bind)==Pair&&eq(x,car(bind)),R cdr(bind))}R nil;}

@@ -18,11 +18,11 @@ get:
     https://github.com/nekoarch/u-incunabulum
 
 build:
-    gcc -Os u.c -lm -o u
+    make
     rlwrap ./u
 
 man:
-    #t #nil + - * / < > sqrt
+    #t #nil + - * / % < > sqrt list
     define defmacro lambda if cond load
     quote atom eq
     car cdr cons
