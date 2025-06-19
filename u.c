@@ -33,11 +33,12 @@ U expand(Ux){$$(T(x)!=Pair,R x)U hd = car(x);
 i(U xs=macenv){U def=car(xs),name=car(def);if (eq(hd,name)){U rest=cdr(def),params=clop(rest),tem=clob(rest),penv=nil,args=cdr(x);
 for(U ps=params;!isNil(ps);ps=cdr(ps),args=cdr(args)){penv=cons(cons(car(ps),car(args)),penv);}
 U inst=subst(tem, penv);R expand(inst);}}R cons(expand(hd),expand(cdr(x)));}
-U eval(Ux,Uy){x=expand(x);$$(x==QQ,R QQ)$$(T(x)==Sym,C*s=gSm(x);$$(s[0]==':',$$(strcmp(s,":help")==0,pf(man);RQ))$$(s[0]=='"'&&s[strlen(s)-1]=='"',R x)R lookup(x,y))
+U eval(Ux,Uy){x=expand(x);$$(x==QQ,R QQ)$$(T(x)==Sym,C*s=gSm(x);$$(s[0]=='"'&&s[strlen(s)-1]=='"',R x)R lookup(x,y))
 $$(Tx==Num||isNil(x)||Tx==True,R x)U op=car(x),args=cdr(x);
 $$(T(op)==Sym,C*s=gSm(op);for(prim_entry *p=table;p->name;p++){$$(!strcmp(s,p->name),R p->fn(args,y))})
 U f=eval(op,y);$$(T(f)!=Clos,Qfun)U params=clop(f),body=clob(f),e0=cloe(f),new_env=e0,xs=args;
 for(U ps=params;!isNil(ps);ps=cdr(ps),xs=cdr(xs)){$$(isNil(xs),Qarg)U val=eval(car(xs),y);new_env=cons(cons(car(ps),val),new_env);}R eval(body,new_env);}
 I main(I ac,C**av){IF=stdin;$$(ac>1,$$(!freopen(av[1],"r",stdin),perror(av[1]);R 1))
 QQ=malloc(1);nil=malloc(sizeof(I));tr=malloc(sizeof(I));*(I*)nil=Nil;*(I*)tr=True;genv=nil;macenv=nil;genv=cons(cons(tr,tr),genv);
-$$(ac==1,printf("u/incunabulum (c)nekoarch "ver __DATE__"\n"))W(1){printf("  ");U expr=rexpr();U res=eval(expr,genv);pt(res);printf("\n");}R 0;}
+$$(ac==1,printf("u/incunabulum (c)nekoarch "ver __DATE__"\n"))W(1){printf("  ");U expr=rexpr();
+$$(T(expr)==Sym&&!strcmp(gSm(expr),":help"),printf("%s\n",man);ready=0;continue)U res=eval(expr,genv);pt(res);printf("\n");}R 0;}
