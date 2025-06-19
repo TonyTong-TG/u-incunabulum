@@ -66,8 +66,7 @@ U2(f_add,$$(isNil(x),R Nm(0))Uv;i(U xs=cdr(x)){Uf;v=bc2(v,f,add);$$(v==QQ,RQ)}R 
 U2(f_mul,$$(isNil(x),R Nm(1))Uv;i(U xs=cdr(x)){Uf;v=bc2(v,f,mul);$$(v==QQ,RQ)}R v;)
 U2(f_minus,$$(isNil(x),Qarg)Uv;$$(isNil(cdr(x)),P(v,Num,Qnum);R Nm(-gNm(v)))i(U xs=cdr(x)){Uf;v=bc2(v,f,sub);$$(v==QQ,RQ)}R v;)
 U2(f_div,$$(isNil(x),Qarg)Uv;$$(isNil(cdr(x)),P(v,Num,Qnum);R Nm(1/gNm(v)))i(U xs=cdr(x)){Uf;v=bc2(v,f,_div);$$(v==QQ,RQ)}R v;)
-U2(f_sqrt,$$(isNil(x),Qarg);$$(!isNil(cdr(x)),U rev=nil,m=nil;i(U xs=x){Uf;$$(f==QQ,RQ);U r=bc1(f,_sqrt);$$(r==QQ,RQ);rev=cons(r,rev);}
-i2(U ps=rev){m=cons(car(ps),m);}Rm;);Uv;$$(v==QQ,RQ);R bc1(v,_sqrt);)
+U2(f_sqrt,$$(isNil(x),Qarg)U m=nil,*tl=&m;i(U xs=x){Uf;$$(f==QQ,RQ);U r=bc1(f,_sqrt);$$(r==QQ,RQ);U n=cons(r,nil);*tl=n;tl=&((U*)n)[2];}R isNil(cdr(x))?car(m):m;)
 U2(f_mod,$$(isNil(x)||isNil(cdr(x))||!isNil(cdr(cdr(x))),Qarg)Uv;$$(isNil(cdr(x)),P(v,Num,Qnum);R Nm(fmod(gNm(v),1.0)))U b=eval(car(cdr(x)),y);
 $$(Tv==Pair||T(b)==Pair,R bc2(v,b,_mod))P(v,Num,Qnum)F r=gNm(v);x=cdr(x);i(U xs=x){Uf;P(f,Num,Qnum)r=fmod(r,gNm(f));}R Nm(r);)
 U2(f_quote,(V)y;R car(x))U2(f_atom,R isAtom(eval(car(x),y))?tr:nil)
@@ -94,6 +93,6 @@ $(T(t)==Sym&&!strcmp(gSm(t),"else"),$$(!isNil(cdr(xs)),Qcnd))
 U2(f_macro,$$(isNil(x)||isNil(cdr(x))||isNil(cdr(cdr(x))),Qmac)
 U m=car(x),rst=cdr(x),p=car(rst),bdy=car(cdr(rst)),tmp=closure(p,bdy,y);macenv=cons(cons(m,tmp),macenv);R m;)
 U2(f_load,$$(isNil(x),Qldn)U fn=eval(car(x),y);$$(T(fn)!=Sym,Qlds)
-FILE *oldIF=IF;IF=fopen(gSm(fn),"r");$$(!IF,perror(gSm(fn));IF=oldIF;R QQ)ready=0;
+FILE *oldIF=IF;IF=fopen(gSm(fn),"r");$$(!IF,perror(gSm(fn));IF=oldIF;RQ)ready=0;
 W(1){rdt();$$(IF==stdin,break)U expr=rexpr();eval(expr,genv);ready=0;}IF=oldIF;ready=0;R Sm("loaded\n");)
 U2(f_list,$$(isNil(x), Qarg)U lst=nil,*tl=&lst;W(!isNil(x)){U e=eval(car(x),y);*tl=cons(e,nil);tl=&((U*)*tl)[2];x=cdr(x);}R lst;)

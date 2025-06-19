@@ -16,9 +16,9 @@ $$(ax||ay,I xatm=ax;U lst=xatm?y:x,hd=nil,*tl=&hd;W(!isNil(lst)){
 U a=xatm?x:car(lst),b=xatm?car(lst):y;U r=bc2(a,b,op);$$(r==QQ,RQ)
 U n=cons(r,nil);*tl=n;tl=&((U*)n)[2];lst=cdr(lst);}R hd;)
 {U xs=x,ys=y,hd=nil,*tl=&hd;W(!isNil(xs)&&!isNil(ys)){U r=bc2(car(xs),car(ys),op);$$(r==QQ,R QQ)
-U n=cons(r,nil); *tl=n; tl=&((U*)n)[2];xs=cdr(xs); ys=cdr(ys);}$$(!isNil(xs)||!isNil(ys),RQ)R hd;}} //binary
-U bc1(Ux,U(*op)(U)){$$(x==QQ,RQ)$$(isAtom(x),P(x,Num,Qnum)R op(x))
-U lst=x,hd=nil,*tl=&hd;W(!isNil(lst)){U r=op(car(lst));$$(r==QQ,RQ)U n=cons(r,nil);*tl=n;tl=&((U*)n)[2];lst=cdr(lst);}R hd;} //unary
+U n=cons(r,nil);*tl=n; tl=&((U*)n)[2];xs=cdr(xs); ys=cdr(ys);}$$(!isNil(xs)||!isNil(ys),RQ)R hd;}} //binary
+U bc1(Ux,U(*op)(U)){$$(x==QQ,RQ)$$(isAtom(x),P(x,Num,Qnum)R op(x))U m=nil,*tl=&m;
+i(U xs=x){U e=car(xs);U r=bc1(e,op);$$(r==QQ,RQ);U n=cons(r,nil);*tl=n;tl=&((U*)n)[2];}Rm;} //unary
 typedef U (*prim_fn)(Ux,Uy);
 typedef struct{C*name;prim_fn fn;}prim_entry;
 prim_entry table[]={
@@ -34,7 +34,8 @@ i(U xs=macenv){U def=car(xs),name=car(def);if (eq(hd,name)){U rest=cdr(def),para
 for(U ps=params;!isNil(ps);ps=cdr(ps),args=cdr(args)){penv=cons(cons(car(ps),car(args)),penv);}
 U inst=subst(tem, penv);R expand(inst);}}R cons(expand(hd),expand(cdr(x)));}
 U eval(Ux,Uy){x=expand(x);$$(x==QQ,R QQ)$$(T(x)==Sym,C*s=gSm(x);$$(s[0]==':',$$(strcmp(s,":help")==0,pf(man);RQ))$$(s[0]=='"'&&s[strlen(s)-1]=='"',R x)R lookup(x,y))
-$$(Tx==Num||isNil(x)||Tx==True,R x)U op=car(x),args=cdr(x);$$(T(op)==Sym,C*s=gSm(op);for(prim_entry *p=table;p->name;p++){$$(!strcmp(s,p->name),R p->fn(args,y))})
+$$(Tx==Num||isNil(x)||Tx==True,R x)U op=car(x),args=cdr(x);
+$$(T(op)==Sym,C*s=gSm(op);for(prim_entry *p=table;p->name;p++){$$(!strcmp(s,p->name),R p->fn(args,y))})
 U f=eval(op,y);$$(T(f)!=Clos,Qfun)U params=clop(f),body=clob(f),e0=cloe(f),new_env=e0,xs=args;
 for(U ps=params;!isNil(ps);ps=cdr(ps),xs=cdr(xs)){$$(isNil(xs),Qarg)U val=eval(car(xs),y);new_env=cons(cons(car(ps),val),new_env);}R eval(body,new_env);}
 I main(I ac,C**av){IF=stdin;$$(ac>1,$$(!freopen(av[1],"r",stdin),perror(av[1]);R 1))
