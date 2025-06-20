@@ -41,7 +41,7 @@ I space(I c){R c==' '||c=='\f'||c=='\n'||c=='\r'||c=='\t'||c=='\v';}
 #define Qfun pf("expect function\n");RQ
 #define Qpair pf("expect pair\n");RQ
 #define P(a,b,c) $$(T(a)!=b,c) //panic early
-#define man "  +  -  *  /  %%  sqrt  quote  atom  eq  car  cdr  cons  list  define  lambda\n  if  <  >  cond  and  or  xor  not  load  defmacro\n"
+#define man "  +  -  *  /  %  sqrt  quote  atom  eq  car  cdr  cons  list  define  lambda\n  if  <  >  cond  and  or  xor  not  load  defmacro\n"
 U rexpr(V);V rdt(V);U eval(Ux,Uy);U bc2(Ux,Uy,U(*op)(U,U));U bc1(Ux,U(*op)(U));
 I Num=1,Sym=2,Pair=3,Nil=4,Clos=5,True=6;
 Z FILE *IF=NULL;U nil,tr,genv,macenv,QQ; //slient
