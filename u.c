@@ -15,9 +15,9 @@ $$(ax||ay,I xatm=ax;U lst=xatm?y:x,hd=nil,*tl=&hd;$$(!isPropLst(lst),Qlst)W(!isN
 U a=xatm?x:car(lst),b=xatm?car(lst):y;U r=bc2(a,b,op);$$(r==QQ,RQ)
 U n=cons(r,nil);*tl=n;tl=&((U*)n)[2];lst=cdr(lst);}R hd;)
 {$$(!(isPropLst(x)&&isPropLst(y)),Qlst)U xs=x,ys=y,hd=nil,*tl=&hd;W(!isNil(xs)&&!isNil(ys)){U r=bc2(car(xs),car(ys),op);$$(r==QQ,RQ)
-U n=cons(r,nil);*tl=n; tl=&((U*)n)[2];xs=cdr(xs); ys=cdr(ys);}$$(!isNil(xs)||!isNil(ys),Qlen)R hd;}} //binary   
+U n=cons(r,nil);*tl=n; tl=&((U*)n)[2];xs=cdr(xs); ys=cdr(ys);}$$(!isNil(xs)||!isNil(ys),Qlen)R hd;}} //binary
 U bc1(Ux,U(*op)(U)){$$(x==QQ,RQ)$$(isAtom(x),P(x,Num,Qnum)R op(x))$$(!isPropLst(x),Qlst)U m=nil,*tl=&m;
-i(U xs=x){U e=car(xs);U r=bc1(e,op);$$(r==QQ,RQ);U n=cons(r,nil);*tl=n;tl=&((U*)n)[2];}Rm;} //unary      
+i(U xs=x){U e=car(xs);U r=bc1(e,op);$$(r==QQ,RQ);U n=cons(r,nil);*tl=n;tl=&((U*)n)[2];}Rm;} //unary
 typedef U (*prim_fn)(Ux,Uy);
 typedef struct{C*name;prim_fn fn;}prim_entry;
 prim_entry table[]={
